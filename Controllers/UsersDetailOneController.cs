@@ -15,6 +15,8 @@ namespace HelloWorld240318.Controllers
 
         public IActionResult Index(QueryModel.UsersDetailOne qModel)
         {
+            var d = new UsersDetailOneService().GetAllUsersDetailOne().ToList();
+
             return View(new ViewModels.UsersDetailOneSearch()
             {
                 UsersDetailOneList = _service.GetAllData(qModel),
