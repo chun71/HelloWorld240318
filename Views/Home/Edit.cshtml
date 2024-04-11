@@ -1,0 +1,87 @@
+﻿@{
+    ViewData["Title"] = "Edit Page";
+    var titleName = "待辦事項";
+    var done = "";
+}
+@model HelloWorld240318.ViewModels.TodosEdit
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+    function EditCancle() {
+        window.location.href = '/Home/ShowList';
+    }
+</script>
+
+<form action="/Home/Update" method="post">
+    @{
+        var m = Model;
+        if (m.InsertDate != null)
+        {
+            titleName = $"{titleName}編輯";
+        }
+        else
+        {
+            titleName = $"{titleName}新增";
+        }
+
+        if (m.IsDone)
+        {
+            done = "checked";
+        }
+
+        <h2 align="center">@titleName</h2>
+        <table class="table table-data">
+            <tbody>
+                <input name="ID" value="@m.ID" hidden />
+                <tr>
+                    <th width="50%">已完成</th>
+                    <td>@Html.CheckBox("IsDone", @done)</td>
+                </tr>
+                <tr>
+                    <th width="50%">待辦編號</th>
+                    <td>@m.ItemNum</td>
+                </tr>
+                <tr>
+                    <th width="50%">建立者</th>
+                    <td>
+                        <select name="UID">
+                            @foreach(var data in m.NameList)
+                            {
+                                if (data.ID == m.UID)
+                                {
+                                    <option value="@data.ID" selected>@data.Name</option>
+                                } 
+                                else
+                                {
+                                    <option value="@data.ID">@data.Name</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th width="50%">待辦事項</th>
+                    <td><input name="Name" value="@m.ItemName" /></td>
+                </tr>
+                <tr>
+                    <th width="50%">截止日期</th>
+                    <td><input  type="date" name="DeadLine" value="@m.DeadLineMsg" /></td>
+                </tr>
+                <tr>
+                    <th width="50%">建立日期</th>
+                    <td>@m.InsertDate</td>
+                </tr>
+                <tr>
+                    <th width="50%">更新日期</th>
+                    <td>@m.UpdateDate</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div align="center">
+            <input type="submit" value="變更">
+            <input type="button" onclick="EditCancle()" value="取消" />
+        </div>
+    }
+</form>

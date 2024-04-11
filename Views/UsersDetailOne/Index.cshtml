@@ -1,0 +1,115 @@
+﻿@model HelloWorld240318.ViewModels.UsersDetailOneSearch
+
+@{
+    ViewData["Title"] = "使用者清單";
+    var qName = "";
+    var qIdentityNum = "";
+
+    if (Model != null)
+    {
+        qName = Model.QName;
+        qIdentityNum = Model.QIdentityNum;
+    }
+}
+
+@section scripts {
+    <script src="~/js/usersDetailOneDataTable.js"></script>
+    <script>
+        function DownloadPdf(id) {
+            window.location.href = '/UsersDetailOne/PdfDownload/' + id;
+        }
+
+        function DownloadExcel(id) {
+            window.location.href = '/UsersDetailOne/ExcelDownload/' + id;
+        }
+
+        function EditData(id) {
+            window.location.href = '/UsersDetailOne/EditPage/' + id;
+        }
+
+        function DelData(id, name) {
+            if (window.confirm('確定要將' + name + '的資料刪除嗎?')) {
+                window.location.href = '/UsersDetailOne/DeleteData/' + id;
+            }
+        }
+    </script>
+}
+
+<h2 align="center">使用者資料</h2>
+<br />
+<form action="/UsersDetailOne" method="post">
+    姓名&nbsp;<input type="text" name="Name" value="@qName" />
+    身分證字號&nbsp;<input type="text" name="IdentityNum" value="@qIdentityNum" />
+    <input type="submit" value="查詢" />
+    <a href="/UsersDetailOne/EditPage">新增</a>
+</form>
+<p />
+
+<table class="table table-bordered" id="usersDetailOne">
+    <thead>
+        <tr>
+            <th>姓名</th>
+            <th>性別</th>
+            <th>婚姻</th>
+            <th>工作年數</th>
+            <th>通勤方式</th>
+            <th>身分證字號</th>
+            <th>生日</th>
+            <th>住址</th>
+            <th>信箱位址</th>
+            <th>電話</th>
+            <th>手機</th>
+            <th>帳號</th>
+            <th>密碼</th>
+            <th>Remark1</th>
+            <th>Remark2</th>
+            <th>Remark3</th>
+            <th>Remark4</th>
+            <th>Remark5</th>
+            <th>Remark6</th>
+            <th>Remark7</th>
+            <th>Remark8</th>
+            <th>Remark9</th>
+            <th></th>
+        </tr>
+    </thead>
+    @if (Model != null)
+    {
+        if (Model.UsersDetailOneList != null)
+        {
+            foreach (var item in Model.UsersDetailOneList)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.SexMsg</td>
+                    <td>@item.IsMarryMsg</td>
+                    <td>@item.JobYears</td>
+                    <td>@item.CommutingMsg</td>
+                    <td>@item.IdentityNum</td>
+                    <td>@item.Birthday</td>
+                    <td>@item.Address</td>
+                    <td>@item.EmailAddress</td>
+                    <td>@item.TelPhone</td>
+                    <td>@item.CellPhone</td>
+                    <td>@item.Account</td>
+                    <td>@item.Password</td>
+                    <td>@item.Remark1</td>
+                    <td>@item.Remark2</td>
+                    <td>@item.Remark3</td>
+                    <td>@item.Remark4</td>
+                    <td>@item.Remark5</td>
+                    <td>@item.Remark6</td>
+                    <td>@item.Remark7</td>
+                    <td>@item.Remark8</td>
+                    <td>@item.Remark9</td>
+                    <td>
+                        <input type="button" onclick="DownloadPdf(@item.ID)" value="PDF下載" />
+                        <input type="button" onclick="DownloadExcel(@item.ID)" value="Excel下載" />
+                        <input type="button" onclick="EditData(@item.ID)" value="編輯" />
+                        <input type="button" onclick="DelData(@item.ID, '@item.Name')" value="刪除" />
+                    </td>
+                </tr>
+            }
+        }
+    }
+</table>

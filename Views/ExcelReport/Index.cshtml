@@ -1,0 +1,17 @@
+﻿@{
+    var title = "Excel報表匯入";
+    ViewBag.Title = title;
+}
+
+<h2 align="center">@title</h2>
+
+
+<form method="post" action="/ExcelReport/ReportImport" enctype="multipart/form-data">
+    <div>
+        <input name="file" type="file" accept=".xlsx,.xls" />
+    </div>
+    <br />
+    <div>
+        <button type="submit" class="btn btn-primary">匯入</button>
+    </div>
+</form>

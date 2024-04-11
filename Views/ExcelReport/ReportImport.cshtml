@@ -1,0 +1,15 @@
+﻿
+<br/><br/>
+<h1>@ViewBag.Message</h1>
+
+@section scripts {
+    <script src="~/js/usersDetailOneDataTable.js"></script>
+    <script>
+        function Msgconfirm() {
+            window.location.href = '/ExcelReport';
+        }
+    </script>
+}
+
+<br/>
+<input type="button" onclick="Msgconfirm()" value="確認" />

@@ -1,0 +1,184 @@
+﻿@model HelloWorld240318.ViewModels.UsersDetailOne
+
+@{
+    var m = Model;
+    var titleName = "使用者資料";
+    var done = "";
+    var sexMsg = "";
+    var sexCheckMsg = "";
+
+    if (m.ID > 0)
+    {
+        titleName = $"{titleName}編輯";
+    }
+    else
+    {
+        titleName = $"{titleName}新增";
+    }
+
+    ViewData["Title"] = titleName;
+}
+
+<script>
+    function EditCancle() {
+        window.location.href = '/UsersDetailOne';
+    }
+</script>
+
+<form action="/UsersDetailOne/UpdateData" method="post" enctype="multipart/form-data">
+    <h2 align="center">@titleName</h2>
+
+    <div align="center">
+        @if (!(@m.ImgPath == null || m.ImgPath == ""))
+        {
+            <img src="/UploadImgs/@m.ImgPath" width="70%"></img>
+        }
+        <input type="file" id="Image" name="Image" accept=".jpg, .jpeg, .png" multiple />
+    </div>
+
+    <table class="table table-data">
+        <tbody>
+            <input name="ID" value="@m.ID" hidden />
+            <tr>
+                <th width="50%"> 姓名</th>
+                <td><input type="text" name="Name" value="@m.Name" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> 性別</th>
+                <td>
+                    @for (int i = 1; i >= 0; i--)
+                    {
+                        if (i == 0)
+                        {
+                            sexMsg = "女";
+                        }
+                        else
+                        {
+                            sexMsg = "男";
+                        }
+
+                        if (i == Model.Sex)
+                        {
+                            sexCheckMsg = "checked";
+                        }
+
+                        <input type="radio" name="Sex" value="@i" @sexCheckMsg /> @sexMsg
+
+                        sexMsg = "";
+                        sexCheckMsg = "";
+                    }
+                </td>
+            </tr>
+
+            @if (m.IsMarry)
+            {
+                done = "checked";
+            }
+
+            <tr>
+                <th width="50%"> 已婚</th>
+                <td>@Html.CheckBox("IsMarry", @done)</td>
+            </tr>
+            <tr>
+                <th width="50%"> 工作年數</th>
+                <td><input type="number" name="JobYears" value="@m.JobYears" min="0" max="50" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> 通勤方式</th>
+                <td>
+                    @if (m != null)
+                    {
+                        if (m.CommutingMsgList != null)
+                        {
+                            <select name="Commuting">
+                                @foreach (var data in m.CommutingMsgList)
+                                {
+                                    if (data.ID == m.Commuting)
+                                    {
+                                        <option value="@data.ID" selected>@data.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@data.ID">@data.Name</option>
+                                    }
+                                }
+                            </select>
+                        }
+                    }
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th width="50%"> 身分證字號</th>
+                <td><input type="text" name="IdentityNum" value="@m.IdentityNum" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> 生日</th>
+                <td><input type="date" name="Birthday" value="@m.BirthdayMsg" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> 住址</th>
+                <td><input type="text" name="Address" value="@m.Address" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> 信箱位址</th>
+                <td><input type="text" name="EmailAddress" value="@m.EmailAddress" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> 電話</th>
+                <td><input type="text" name="TelPhone" value="@m.TelPhone" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> 手機</th>
+                <td><input type="text" name="CellPhone" value="@m.CellPhone" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> 帳號</th>
+                <td><input type="text" name="Account" value="@m.Account" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> 密碼</th>
+                <td><input type="text" name="Password" value="@m.Password" /></td>
+            </tr>
+            <tr>
+                <th width="50%">  Remark1 </th>
+                <td><input type="text" name="Remark1" value="@m.Remark1" /></td>
+            <tr>
+                <th width="50%"> Remark2</th>
+                <td><input type="text" name="Remark2" value="@m.Remark2" /></td>
+            </tr>
+            <tr>
+                <th width="50%">  Remark3</th>
+                <td><input type="text" name="Remark3" value="@m.Remark3" /></td>
+            </tr>
+            <tr>
+                <th width="50%">  Remark4 </th>
+                <td><input type="text" name="Remark4" value="@m.Remark4" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> Remark5 </th>
+                <td><input type="text" name="Remark5" value="@m.Remark5" /></td>
+            </tr>
+            <tr>
+                <th width="50%">  Remark6</th>
+                <td><input type="text" name="Remark6" value="@m.Remark6" /></td>
+            </tr>
+            <tr>
+                <th width="50%">  Remark7</th>
+                <td><input type="text" name="Remark7" value="@m.Remark7" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> Remark8</th>
+                <td><input type="text" name="Remark8" value="@m.Remark8" /></td>
+            </tr>
+            <tr>
+                <th width="50%"> Remark9 </th>
+                <td><input type="text" name="Remark9" value="@m.Remark9" /></td>
+            </tr>
+    </table>
+
+    <div align="center">
+        <input type="submit" value="變更">
+        <input type="button" onclick="EditCancle()" value="取消" />
+    </div>
+</form>

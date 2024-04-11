@@ -1,0 +1,159 @@
+﻿
+@model HelloWorld240318.ViewModels.UsersDetailSearch
+
+@{
+    ViewData["Title"] = "待辦事項總表";
+    var qName = "";
+    var qIdentityNum = "";
+    var checkSex = false;
+    var qSex = 0;
+    var cheakJobYear = false;
+    var qJobYears = 0;
+    var sexMsg = "";
+    var qSexMsg = "";
+
+    if (Model != null)
+    {
+        qName = Model.QName;
+        qIdentityNum = Model.QIdentityNum;
+        checkSex = Model.CheckSex;
+        qSex = Model.QSex;
+        cheakJobYear = Model.CheakJobYear;
+        qJobYears = Model.QJobYears;
+    }
+}
+
+@section scripts {
+    <script src="~/js/usersBuckupsDataTable.js"></script>
+    <script>
+        var info = document.getElementById('spanQJobYears');
+        if ($('#cheakJobYear').is(":checked")) {
+            info.style.display = 'inline';
+        }
+        else {
+            info.style.display = 'none';
+        }
+
+        if ($('#checkSex').is(":checked")) {
+            $('#qSexSpan').show();
+        }
+        else {
+            $('#qSexSpan').hide();
+        }
+
+        $("#checkSex").click(function () {
+            if ($(this).is(":checked")) {
+                $('#qSexSpan').show();
+            }
+            else {
+                $('#qSexSpan').hide();
+            }
+        });
+
+        $("#cheakJobYear").click(function () {
+            if ($(this).is(":checked")) {
+                info.style.display = 'inline';
+            }
+            else {
+                info.style.display = 'none';
+            }
+        });
+
+        function EditData(id) {
+            window.location.href = '/UsersDetail/EditPage/' + id;
+        }
+
+        function DelData(id, name) {
+            if (window.confirm('確定要將' + name + '的資料刪除嗎?')) {
+                window.location.href = '/UsersDetail/DeleteData/' + id;
+            }
+        }
+    </script>
+}
+
+<h2 align="center">使用者資料</h2>
+<br />
+<form action="/UsersDetail" method="post">
+    姓名&nbsp;<input type="text" name="qName" value="@qName" />
+    身分證字號&nbsp;<input type="text" name="qIdentityNum" value="@qIdentityNum" />
+    @Html.CheckBox("checkSex", @checkSex)啟用檢查性別&nbsp
+    @if (Model != null)
+    {
+        <span id="qSexSpan">
+            @for (int i = 1; i >= 0; i--)
+            {
+                if (i == 0)
+                {
+                    sexMsg = "女";
+                }
+                else
+                {
+                    sexMsg = "男";
+                }
+                if (i == Model.QSex)
+                {
+                    qSexMsg = "checked";
+                }
+                <input type="radio" name="qSex" value="@i" @qSexMsg />
+
+                @sexMsg
+                qSexMsg = "";
+            }
+        </span>
+    }
+    @Html.CheckBox("cheakJobYear", @cheakJobYear)啟用檢查工作年資&nbsp;
+    <span id="spanQJobYears">
+        <input type="number" name="qJobYears" value="@qJobYears" min="0" max="50" />
+    </span>
+    <input type="submit" value="查詢" />
+    <a href="/UsersDetail/EditPage">新增</a>
+</form>
+<p />
+
+<table class="table table-bordered" id="usersBuckups">
+    <thead>
+        <tr>
+            <th>姓名</th>
+            <th>性別</th>
+            <th>已婚</th>
+            <th>工作年數</th>
+            <th>通勤方式</th>
+            <th>身分證字號</th>
+            <th>生日</th>
+            <th>住址</th>
+            <th>信箱位址</th>
+            <th>電話</th>
+            <th>手機</th>
+            <th>帳號</th>
+            <th>密碼</th>
+            <th>Remark</th>
+            <th></th>
+        </tr>
+    </thead>
+    @if (Model != null && Model.UsersDetailList.Any())
+    {
+        foreach (var item in Model.UsersDetailList)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.SexMsg</td>
+                <td>@item.IsMarryMsg</td>
+                <td>@item.JobYears</td>
+                <td>@item.CommutingMsg</td>
+                <td>@item.IdentityNum</td>
+                <td>@item.Birthday</td>
+                <td>@item.Address</td>
+                <td>@item.EmailAddress</td>
+                <td>@item.TelPhone</td>
+                <td>@item.CellPhone</td>
+                <td>@item.Account</td>
+                <td>@item.Password</td>
+                <td>@item.Remark</td>
+                <td>
+                    <input type="button" onclick="EditData(@item.ID)" value="編輯" />
+                    <input type="button" onclick="DelData(@item.ID, '@item.Name')" value="刪除" />
+                </td>
+            </tr>
+        }
+    }
+</table>

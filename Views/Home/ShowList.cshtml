@@ -1,0 +1,126 @@
+﻿@{
+    ViewData["Title"] = "待辦事項總表";
+    var i = 1;
+    var done = "";
+    var color = "";
+    var canEdit = "";
+    var canDel = "disabled";
+    var qName = "";
+    var qDeadLine = "";
+    var qInsertDate = "";
+    var qUpdateDate = "";
+}
+@model HelloWorld240318.ViewModels.TodosSearch
+@section scripts {
+    <script src="~/js/todoDataTable.js"></script>
+}
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+    function EditData(id, itemNum) {
+        window.location.href = '/Home/Edit?id=' + id + '&itemNum=' + itemNum;
+    }
+
+    function DelData(id, name) {
+        if (window.confirm('確定要將代辦事項: ' + name + ' 刪除嗎?')) {
+            window.location.href = '/Home/Delete/' + id;
+        }
+    }
+</script>
+
+<h2 align="center">待辦事項總表</h2>
+<br />
+<form action="/Home/ShowList" method="post">
+    建立者&nbsp;
+    <select name="UID">
+        <option value="0" selected></option>
+        @if (Model != null  && Model.NameList.Any())
+        {
+            foreach (var data in Model.NameList)
+            {
+                if (data.ID == Model.UID)
+                {
+                    <option value="@data.ID" selected>@data.Name</option>
+                }
+                else
+                {
+                    <option value="@data.ID">@data.Name</option>
+                }
+            }
+        }
+    </select>
+    @if (Model != null)
+    {
+        qName = Model.Name;
+        qDeadLine = Model.DeadLine;
+        qInsertDate = Model.InsertDate;
+        qUpdateDate = Model.UpdateDate;
+    }
+ 
+    待辦事項&nbsp;<input type="text" name="Name" value="@qName" />
+    截止日期&nbsp;<input type="date" name="DeadLine" value="@qDeadLine" />
+    建立日期&nbsp;<input type="date" name="InsertDate" value="@qInsertDate" />
+    最終更新日&nbsp;<input type="date" name="UpdateDate" value="@qUpdateDate" />
+    <input type="submit" value="查詢" />
+</form>
+<p />
+
+<table class="table table-bordered" id="todoDataTable">
+    <thead>
+        <tr>
+            <th>已完成</th>
+            <th>待辦編號</th>
+            <th>建立者</th>
+            <th>中文名</th>
+            <th>待辦事項</th>
+            <th>截止日期</th>
+            <th>建立日期</th>
+            <th>最終更新日</th>
+            <td>
+                <a href="/Home/Edit">新增</a>
+            </td>
+        </tr>
+    </thead>
+    @if (Model != null && Model.TodoList.Any())
+    {
+        foreach (var item in Model.TodoList)
+        {
+            if (item.DeadLine.HasValue)
+            {
+                if (item.DeadLine.Value.ToDateTime(TimeOnly.Parse("00:00")).Subtract(DateTime.Today).Days < 3)
+                {
+                    color = "Red";
+                }
+            }
+
+            if (item.IsDone)
+            {
+                done = "checked";
+                color = "#D0D3D4";
+                canEdit = "disabled";
+                canDel = "";
+            }
+
+            <tr style="color:@color">
+                <td><input type="checkbox" @done disabled /></td>
+                <td>@i</td>
+                <td>@item.Name</td>
+                <td>@item.CnName</td>
+                <td>@item.ItemName</td>
+                <td>@item.DeadLine</td>
+                <td>@item.InsertDate</td>
+                <td>@item.UpdateDate</td>
+                <td>
+                    <input type="button" onclick="EditData(@item.ID, @i)" value="編輯" @canEdit />
+                    <input type="button" onclick="DelData(@item.ID, '@item.ItemName')" value="刪除" @canDel />
+                </td>
+            </tr>
+            i++;
+            done = "";
+            color = "";
+            canEdit = "";
+            canDel = "disabled";
+        }
+    }
+</table>
