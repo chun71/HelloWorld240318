@@ -102,11 +102,11 @@
                     <td>@item.Remark7</td>
                     <td>@item.Remark8</td>
                     <td>@item.Remark9</td>
-                    <td>
-                        <input type="button" onclick="DownloadPdf(@item.ID)" value="PDF下載" />
-                        <input type="button" onclick="DownloadExcel(@item.ID)" value="Excel下載" />
+                    <td>       
                         <input type="button" onclick="EditData(@item.ID)" value="編輯" />
                         <input type="button" onclick="DelData(@item.ID, '@item.Name')" value="刪除" />
+                        <input type="button" onclick="DownloadPdf(@item.ID)" value="PDF下載" />
+                        <input type="button" onclick="DownloadExcel(@item.ID)" value="Excel下載" />
                     </td>
                 </tr>
             }
