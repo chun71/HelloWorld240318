@@ -2,14 +2,18 @@
 using Aspose.Words;
 using Aspose.Words.Saving;
 using Aspose.Words.Tables;
+using Dapper;
 using HelloWorld240318.Models;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Elfie.Extensions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NPOI.HSSF.UserModel;
 using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
+using System.Data;
 using System.Drawing;
 
 namespace HelloWorld240318.Service
@@ -19,6 +23,8 @@ namespace HelloWorld240318.Service
         public readonly MemoManagerContext _memoManagerContext;
 
         private readonly IWebHostEnvironment _webHostEnvironment;
+
+        private readonly string connectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build()["ConnectionStrings:SqlServer"];
 
         public UsersDetailOneService()
         {
@@ -75,8 +81,9 @@ namespace HelloWorld240318.Service
                     Remark9 = m.Remark9,
                     SexMsg = m.Sex == 0 ? Enum.SexList.女.ToString() : Enum.SexList.男.ToString(),
                     IsMarryMsg = m.IsMarry ? "已婚" : "未婚",
-                    CommutingMsg = Common.Common.commutingList.ContainsKey(m.Commuting) ? Common.Common.commutingList[m.Commuting] : ""
-                };
+                    CommutingMsg = Common.Common.commutingList.ContainsKey(m.Commuting) ? Common.Common.commutingList[m.Commuting] : "",
+                    BirthdayMsg = m.Birthday.HasValue ? m.Birthday.Value.ToString("yyyy-MM-dd") : ""
+            };
                 datas.Add(data);
             }
 
@@ -112,7 +119,8 @@ namespace HelloWorld240318.Service
                 Remark9 = m.Remark9,
                 SexMsg = m.Sex == 0 ? Enum.SexList.女.ToString() : Enum.SexList.男.ToString(),
                 IsMarryMsg = m.IsMarry ? "已婚" : "未婚",
-                CommutingMsg = Common.Common.commutingList.ContainsKey(m.Commuting) ? Common.Common.commutingList[m.Commuting] : ""
+                CommutingMsg = Common.Common.commutingList.ContainsKey(m.Commuting) ? Common.Common.commutingList[m.Commuting] : "",
+                BirthdayMsg = m.Birthday.HasValue ? m.Birthday.Value.ToString("yyyy-MM-dd") : ""
             };
         }
 
@@ -607,6 +615,13 @@ namespace HelloWorld240318.Service
             // 將 Word 轉換為 PDF
             doc.Save(pdfDatas, options);
             return pdfDatas;
+        }
+
+        public  IEnumerable<ViewModels.UsersDetailOne> GetAllUsersDetailOne()
+        {
+            using IDbConnection dbConnection = new SqlConnection(connectionString);
+            dbConnection.Open();
+            return  dbConnection.Query<ViewModels.UsersDetailOne>("SELECT * FROM UsersDetailOne");
         }
     }
 }

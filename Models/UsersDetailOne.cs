@@ -19,7 +19,7 @@ public partial class UsersDetailOne
 
     public string IdentityNum { get; set; }
 
-    public DateOnly? Birthday { get; set; }
+    public DateTime? Birthday { get; set; }
 
     public string Address { get; set; }
 
