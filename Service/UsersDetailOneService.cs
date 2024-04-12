@@ -78,12 +78,8 @@ namespace HelloWorld240318.Service
                     Remark6 = m.Remark6,
                     Remark7 = m.Remark7,
                     Remark8 = m.Remark8,
-                    Remark9 = m.Remark9,
-                    SexMsg = m.Sex == 0 ? Enum.SexList.女.ToString() : Enum.SexList.男.ToString(),
-                    IsMarryMsg = m.IsMarry ? "已婚" : "未婚",
-                    CommutingMsg = Common.Common.commutingList.ContainsKey(m.Commuting) ? Common.Common.commutingList[m.Commuting] : "",
-                    BirthdayMsg = m.Birthday.HasValue ? m.Birthday.Value.ToString("yyyy-MM-dd") : ""
-            };
+                    Remark9 = m.Remark9
+                };
                 datas.Add(data);
             }
 
@@ -116,11 +112,7 @@ namespace HelloWorld240318.Service
                 Remark6 = m.Remark6,
                 Remark7 = m.Remark7,
                 Remark8 = m.Remark8,
-                Remark9 = m.Remark9,
-                SexMsg = m.Sex == 0 ? Enum.SexList.女.ToString() : Enum.SexList.男.ToString(),
-                IsMarryMsg = m.IsMarry ? "已婚" : "未婚",
-                CommutingMsg = Common.Common.commutingList.ContainsKey(m.Commuting) ? Common.Common.commutingList[m.Commuting] : "",
-                BirthdayMsg = m.Birthday.HasValue ? m.Birthday.Value.ToString("yyyy-MM-dd") : ""
+                Remark9 = m.Remark9
             };
         }
 
@@ -134,22 +126,6 @@ namespace HelloWorld240318.Service
 
                 if (q != null)
                 {
-                    var commutingList = Common.Common.commutingList;
-                    var commutingMsgList = new List<ViewModels.IdAndName>();
-
-                    for (int i = 0; i < commutingList.Count(); i++)
-                    {
-                        if (commutingList.ContainsKey(i))
-                        {
-                            var m = new ViewModels.IdAndName()
-                            {
-                                ID = i,
-                                Name = commutingList[i]
-                            };
-                            commutingMsgList.Add(m);
-                        }
-                    }
-
                     data.ID = q.ID;
                     data.Name = q.Name;
                     data.Sex = q.Sex;
@@ -174,8 +150,6 @@ namespace HelloWorld240318.Service
                     data.Remark8 = q.Remark8;
                     data.Remark9 = q.Remark9;
                     data.ImgPath = q.ImgPath;
-                    data.BirthdayMsg = q.Birthday.HasValue ? q.Birthday.Value.ToString("yyyy-MM-dd") : "";
-                    data.CommutingMsgList = commutingMsgList;
                 }
             }
 
@@ -323,7 +297,7 @@ namespace HelloWorld240318.Service
                     sheet.GetRow(1).CreateCell(2).SetCellValue(q.IsMarry ? "已婚" : "未婚"); sheet.GetRow(1).CreateCell(3).SetCellValue(q.JobYears);
                     sheet.GetRow(1).CreateCell(4).SetCellValue(Common.Common.commutingList.ContainsKey(q.Commuting) ? Common.Common.commutingList[q.Commuting] : "");
                     sheet.GetRow(1).CreateCell(5).SetCellValue(q.IdentityNum);
-                    sheet.GetRow(1).CreateCell(6).SetCellValue(q.Birthday.HasValue ? q.Birthday.ToString() : "");
+                    sheet.GetRow(1).CreateCell(6).SetCellValue(q.Birthday.HasValue ? q.Birthday.Value.ToString("yyyy-MM-dd") : "");
                     sheet.GetRow(1).CreateCell(7).SetCellValue(q.Address);
                     sheet.GetRow(3).CreateCell(0).SetCellValue(q.EmailAddress); sheet.GetRow(3).CreateCell(1).SetCellValue(q.TelPhone);
                     sheet.GetRow(3).CreateCell(2).SetCellValue(q.CellPhone); sheet.GetRow(3).CreateCell(3).SetCellValue(q.Account);
@@ -498,7 +472,7 @@ namespace HelloWorld240318.Service
                     builder.InsertCell(); builder.Write("E-Mail");
                     builder.EndRow();
                     font.Bold = false;
-                    builder.InsertCell(); builder.Write(q.Birthday.HasValue ? q.Birthday.ToString() : "");
+                    builder.InsertCell(); builder.Write(q.Birthday.HasValue ? q.Birthday.Value.ToString("yyyy-MM-dd") : "");
                     builder.InsertCell(); builder.Write(q.Address);
                     builder.InsertCell(); builder.Write(q.EmailAddress);
                     builder.EndRow();
@@ -617,11 +591,65 @@ namespace HelloWorld240318.Service
             return pdfDatas;
         }
 
-        public  IEnumerable<ViewModels.UsersDetailOne> GetAllUsersDetailOne()
+        public IEnumerable<ViewModels.UsersDetailOne> GetAllUsersDetailOne(QueryModel.UsersDetailOne model)
         {
             using IDbConnection dbConnection = new SqlConnection(connectionString);
             dbConnection.Open();
-            return  dbConnection.Query<ViewModels.UsersDetailOne>("SELECT * FROM UsersDetailOne");
+
+            string sqlCmd = "SELECT * FROM UsersDetailOne WHERE 1 = 1";
+            var dynParams = new DynamicParameters();
+
+            if (!model.Name.IsNullOrEmpty())
+            {
+                sqlCmd = $"{sqlCmd} AND Name = @Name";
+                dynParams.Add("@Name", model.Name, DbType.String, ParameterDirection.Input, model.Name.Length);
+            }
+
+            if (!model.IdentityNum.IsNullOrEmpty())
+            {
+                sqlCmd = $"{sqlCmd} AND IdentityNum = @IdentityNum";
+                dynParams.Add("@IdentityNum", model.IdentityNum, DbType.String, ParameterDirection.Input, model.IdentityNum.Length);
+            }
+
+            return dbConnection.Query<ViewModels.UsersDetailOne>(sqlCmd, dynParams);
+        }
+
+        public ViewModels.UsersDetailOne GetUsersDetailOneById(long? id)
+        {
+            using IDbConnection dbConnection = new SqlConnection(connectionString);
+            dbConnection.Open();
+            return dbConnection.QueryFirstOrDefault<ViewModels.UsersDetailOne>("SELECT * FROM UsersDetailOne WHERE Id = @Id", new { Id = id });
+        }
+
+        public void InsertUsersDetailOne(ViewModels.UsersDetailOne model)
+        {
+            using IDbConnection dbConnection = new SqlConnection(connectionString);
+            dbConnection.Open();
+
+            var dynParams = new DynamicParameters();
+            dynParams.Add("@Name", model.Name, DbType.String, ParameterDirection.Input, model.Name.Length);
+            dynParams.Add("@Sex", model.Sex, DbType.Int32, ParameterDirection.Input);
+            dynParams.Add("@IsMarry", model.IsMarry, DbType.Boolean, ParameterDirection.Input);
+
+            dbConnection.Execute(@"INSERT INTO UsersDetailOne 
+                                                         (Name, Sex, IsMarry) 
+                                                         VALUES (@Name, @Sex, @IsMarry)", dynParams);
+        }
+
+        public void UpdateUsersDetailOne(ViewModels.UsersDetailOne model)
+        {
+            using IDbConnection dbConnection = new SqlConnection(connectionString);
+            dbConnection.Open();
+            dbConnection.Execute(@"UPDATE UsersDetailOne SET 
+                                                         Name = @Name, Sex = @Sex, IsMarry = @IsMarry 
+                                                         WHERE Id = @Id", model);
+        }
+
+        public void DeleteUsersDetailOne(long? id)
+        {
+            using IDbConnection dbConnection = new SqlConnection(connectionString);
+            dbConnection.Open();
+            dbConnection.Execute("DELETE FROM UsersDetailOne WHERE Id = @Id", new { Id = id });
         }
     }
 }

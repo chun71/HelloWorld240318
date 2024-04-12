@@ -15,7 +15,7 @@ namespace HelloWorld240318.Controllers
 
         public IActionResult Index(QueryModel.UsersDetailOne qModel)
         {
-            var d = new UsersDetailOneService().GetAllUsersDetailOne().ToList();
+            var d = new UsersDetailOneService().GetAllUsersDetailOne(qModel).ToList();
 
             return View(new ViewModels.UsersDetailOneSearch()
             {
@@ -27,6 +27,8 @@ namespace HelloWorld240318.Controllers
 
         public IActionResult EditPage(long? id)
         {
+            var d = new UsersDetailOneService().GetUsersDetailOneById(id);
+
             return View(_service.EditPage(id));
         }
 

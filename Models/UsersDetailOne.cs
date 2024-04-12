@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿
 namespace HelloWorld240318.Models;
 
 public partial class UsersDetailOne

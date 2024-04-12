@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Web;
-
+﻿
 namespace HelloWorld240318.ViewModels;
 
 public partial class UsersDetailOne
@@ -58,15 +55,37 @@ public partial class UsersDetailOne
 
     public string ImgPath { get; set; }
 
-    public string SexMsg { get; set; }
+    public string SexMsg { get { return Sex == 0 ? Enum.SexList.女.ToString() : Enum.SexList.男.ToString(); } }
 
-    public string IsMarryMsg { get; set; }
+    public string IsMarryMsg { get { return IsMarry == true ? "已婚" : "未婚"; } }
 
-    public string CommutingMsg { get; set; }
+    public string CommutingMsg { get { return Common.Common.commutingList.ContainsKey(Commuting) ? Common.Common.commutingList[Commuting] : ""; } }
 
-    public string BirthdayMsg { get; set; }
+    public string BirthdayMsg { get { return Birthday.HasValue ? Birthday.Value.ToString("yyyy-MM-dd") : ""; } }
 
-    public  List<IdAndName>CommutingMsgList { get; set; }
+    public List<IdAndName> CommutingMsgList
+    {
+        get
+        {
+            var commutingList = Common.Common.commutingList;
+            var commutingMsgList = new List<ViewModels.IdAndName>();
+
+            for (int i = 0; i < commutingList.Count(); i++)
+            {
+                if (commutingList.ContainsKey(i))
+                {
+                    var m = new IdAndName()
+                    {
+                        ID = i,
+                        Name = commutingList[i]
+                    };
+                    commutingMsgList.Add(m);
+                }
+            };
+
+            return commutingMsgList;
+        }
+    }
 
     public IFormFile Image { get; set; }
 }
