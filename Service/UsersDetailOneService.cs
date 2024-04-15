@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NPOI.HSSF.UserModel;
 using NPOI.HSSF.Util;
+using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
 using System.Data;
@@ -26,10 +27,12 @@ namespace HelloWorld240318.Service
 
         private readonly string connectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build()["ConnectionStrings:SqlServer"];
 
+        #region
         public UsersDetailOneService()
         {
 
         }
+        #endregion
 
         public UsersDetailOneService(MemoManagerContext memoManagerContext, IWebHostEnvironment iWebHostEnvironment)
         {
@@ -37,6 +40,7 @@ namespace HelloWorld240318.Service
             _webHostEnvironment = iWebHostEnvironment;
         }
 
+        #region GetAllData
         public List<ViewModels.UsersDetailOne> GetAllData(QueryModel.UsersDetailOne qModel)
         {
             var q = _memoManagerContext.UsersDetailOne.AsNoTracking().AsQueryable();
@@ -85,7 +89,9 @@ namespace HelloWorld240318.Service
 
             return datas;
         }
+        #endregion 
 
+        #region ChangeToViewModel
         public ViewModels.UsersDetailOne ChangeToViewModel(UsersDetailOne m)
         {
             return new ViewModels.UsersDetailOne()
@@ -116,6 +122,9 @@ namespace HelloWorld240318.Service
             };
         }
 
+        #endregion
+
+        #region EditPage
         public ViewModels.UsersDetailOne EditPage(long? id)
         {
             var data = new ViewModels.UsersDetailOne();
@@ -155,7 +164,9 @@ namespace HelloWorld240318.Service
 
             return data;
         }
+        #endregion
 
+        #region UpDateData
         public void UpDateData(ViewModels.UsersDetailOne data)
         {
             var model = new UsersDetailOne();
@@ -231,12 +242,16 @@ namespace HelloWorld240318.Service
 
             _memoManagerContext.SaveChanges();
         }
+        #endregion
 
+        #region DeleteData
         public void DeleteData(long? id)
         {
             _memoManagerContext.UsersDetailOne.Where(m => m.ID == id).ExecuteDelete();
         }
+        #endregion
 
+        #region ExcelCreate
         public MemoryStream ExcelCreate(ViewModels.UsersDetailOne q, bool isTest)
         {
             //建立Excel
@@ -338,6 +353,22 @@ namespace HelloWorld240318.Service
                 headerfont.Boldweight = (short)FontBoldWeight.Bold;//粗體
                 headerStyle.SetFont(headerfont);
 
+                //設定欄位樣式
+                ICellStyle hyperlinkStyle = hssfworkbook.CreateCellStyle();
+                IFont hyperlinkFont = hssfworkbook.CreateFont();
+                hyperlinkStyle.Alignment = HorizontalAlignment.Center; //水平置中
+                hyperlinkStyle.VerticalAlignment = VerticalAlignment.Center; //垂直置中
+                hyperlinkStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.None;//設定框限線
+                hyperlinkStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.None;
+                hyperlinkStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.None;
+                hyperlinkStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.None;
+                hyperlinkFont.FontName = "Microsoft JhengHei";
+                hyperlinkFont.FontHeightInPoints = 11;
+                hyperlinkFont.Boldweight = (short)FontBoldWeight.Normal;//正常
+                hyperlinkFont.Underline = FontUnderlineType.Single;
+                hyperlinkFont.Color = HSSFColor.Blue.Index;
+                hyperlinkStyle.SetFont(hyperlinkFont);
+
                 //主標題
                 sheet.CreateRow(1);//先CreateRow建立,才可GetRow取得該欄位
                 sheet.AddMergedRegion(new CellRangeAddress(1, 1, 0, 6)); // 合併第2行(1,1) A~F列儲存格(0,6)
@@ -412,12 +443,33 @@ namespace HelloWorld240318.Service
                 //總計
                 sheet.GetRow(4).CreateCell(6).SetCellValue("100");
                 sheet.GetRow(4).GetCell(6).CellStyle = dataStyle;
+
+                sheet.CreateFreezePane(0, 1, 0, 1);
+
+                sheet.GetRow(6).CreateCell(0).CellFormula = "A15 + A17";
+
+                sheet.GetRow(6).CreateCell(1).SetCellValue("google");
+                sheet.GetRow(6).GetCell(1).Hyperlink = new HSSFHyperlink(HyperlinkType.Url);
+                sheet.GetRow(6).GetCell(1).Hyperlink.Address = "https://www.google.com";
+                sheet.GetRow(6).GetCell(1).CellStyle = hyperlinkStyle;
+
+                string imagePath = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build()["UploadImgPath"];
+                string imageTotalPath = $"{imagePath}_ImgTest638487642071642745.jpg";
+                int pictureIndex = hssfworkbook.AddPicture(File.ReadAllBytes(imageTotalPath), PictureType.JPEG);
+                HSSFPatriarch patriarch = (HSSFPatriarch)sheet.CreateDrawingPatriarch();
+                HSSFClientAnchor anchor = new HSSFClientAnchor(0, 0, 0, 0, 8, 0, 13, 11)
+                {
+                    AnchorType = AnchorType.MoveDontResize // 圖片大小不隨儲存格變化
+                };
+                patriarch.CreatePicture(anchor, pictureIndex);
             }
 
             hssfworkbook.Write(excelDatas);
             return excelDatas;
         }
+        #endregion
 
+        #region PdfCreate
         public MemoryStream PdfCreate(ViewModels.UsersDetailOne q, bool isTest)
         {
             Aspose.Words.Document doc = new Aspose.Words.Document();
@@ -590,7 +642,9 @@ namespace HelloWorld240318.Service
             doc.Save(pdfDatas, options);
             return pdfDatas;
         }
+        #endregion
 
+        #region GetAllUsersDetailOne
         public IEnumerable<ViewModels.UsersDetailOne> GetAllUsersDetailOne(QueryModel.UsersDetailOne model)
         {
             using IDbConnection dbConnection = new SqlConnection(connectionString);
@@ -613,14 +667,18 @@ namespace HelloWorld240318.Service
 
             return dbConnection.Query<ViewModels.UsersDetailOne>(sqlCmd, dynParams);
         }
+        #endregion
 
+        #region GetUsersDetailOneById
         public ViewModels.UsersDetailOne GetUsersDetailOneById(long? id)
         {
             using IDbConnection dbConnection = new SqlConnection(connectionString);
             dbConnection.Open();
             return dbConnection.QueryFirstOrDefault<ViewModels.UsersDetailOne>("SELECT * FROM UsersDetailOne WHERE Id = @Id", new { Id = id });
         }
+        #endregion
 
+        #region InsertUsersDetailOne
         public void InsertUsersDetailOne(ViewModels.UsersDetailOne model)
         {
             using IDbConnection dbConnection = new SqlConnection(connectionString);
@@ -635,7 +693,9 @@ namespace HelloWorld240318.Service
                                                          (Name, Sex, IsMarry) 
                                                          VALUES (@Name, @Sex, @IsMarry)", dynParams);
         }
+        #endregion
 
+        #region UpdateUsersDetailOne
         public void UpdateUsersDetailOne(ViewModels.UsersDetailOne model)
         {
             using IDbConnection dbConnection = new SqlConnection(connectionString);
@@ -644,12 +704,15 @@ namespace HelloWorld240318.Service
                                                          Name = @Name, Sex = @Sex, IsMarry = @IsMarry 
                                                          WHERE Id = @Id", model);
         }
+        #endregion
 
+        #region DeleteUsersDetailOne
         public void DeleteUsersDetailOne(long? id)
         {
             using IDbConnection dbConnection = new SqlConnection(connectionString);
             dbConnection.Open();
             dbConnection.Execute("DELETE FROM UsersDetailOne WHERE Id = @Id", new { Id = id });
         }
+        #endregion
     }
 }
