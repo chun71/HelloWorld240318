@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NPOI.HSSF.UserModel;
 using NPOI.HSSF.Util;
-using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
+using NPOI.XSSF.UserModel;
 using System.Data;
 using System.Drawing;
 
@@ -25,7 +25,9 @@ namespace HelloWorld240318.Service
 
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        private readonly string connectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build()["ConnectionStrings:SqlServer"];
+        private static readonly ConfigurationBuilder configBuilder = new ConfigurationBuilder();
+
+        private readonly string connectionString = configBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build()["ConnectionStrings:SqlServer"];
 
         #region
         public UsersDetailOneService()
@@ -446,22 +448,51 @@ namespace HelloWorld240318.Service
 
                 sheet.CreateFreezePane(0, 1, 0, 1);
 
-                sheet.GetRow(6).CreateCell(0).CellFormula = "A15 + A17";
+                sheet.GetRow(8).CreateCell(0).SetCellValue("A");
+                sheet.GetRow(8).CreateCell(1).SetCellValue("B");
+                sheet.GetRow(8).CreateCell(2).SetCellValue("A+B");
+                sheet.GetRow(9).CreateCell(0).SetCellValue(17);
+                sheet.GetRow(9).CreateCell(1).SetCellValue(7);
+                sheet.GetRow(9).CreateCell(2).CellFormula = "SUM(A10:B10)";
+
+                for (int row = 8; row < 10; row++)
+                {
+                    for (int cell = 0; cell < 3; cell++)
+                    {
+                        sheet.GetRow(row).GetCell(cell).CellStyle = headerStyle;
+                    }
+                }
 
                 sheet.GetRow(6).CreateCell(1).SetCellValue("google");
                 sheet.GetRow(6).GetCell(1).Hyperlink = new HSSFHyperlink(HyperlinkType.Url);
                 sheet.GetRow(6).GetCell(1).Hyperlink.Address = "https://www.google.com";
                 sheet.GetRow(6).GetCell(1).CellStyle = hyperlinkStyle;
 
-                string imagePath = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build()["UploadImgPath"];
+                string imagePath = configBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build()["UploadImgPath"];
                 string imageTotalPath = $"{imagePath}_ImgTest638487642071642745.jpg";
                 int pictureIndex = hssfworkbook.AddPicture(File.ReadAllBytes(imageTotalPath), PictureType.JPEG);
                 HSSFPatriarch patriarch = (HSSFPatriarch)sheet.CreateDrawingPatriarch();
-                HSSFClientAnchor anchor = new HSSFClientAnchor(0, 0, 0, 0, 8, 0, 13, 11)
+                HSSFClientAnchor anchor = new HSSFClientAnchor(0, 0, 0, 0, 8, 2, 14, 14)
                 {
                     AnchorType = AnchorType.MoveDontResize // 圖片大小不隨儲存格變化
                 };
                 patriarch.CreatePicture(anchor, pictureIndex);
+
+                var msg = new HSSFRichTextString("文字顏色測試");
+
+                var redFont = hssfworkbook.CreateFont();
+                redFont.Color = IndexedColors.Red.Index;
+                msg.ApplyFont(0, 1, redFont);
+
+                var greenFont = hssfworkbook.CreateFont();
+                greenFont.Color = IndexedColors.Green.Index;
+                msg.ApplyFont(1, 3,greenFont);
+
+                var blueFont = hssfworkbook.CreateFont();
+                blueFont.Color = IndexedColors.Blue.Index;
+                msg.ApplyFont(3, msg.Length, blueFont);
+
+                sheet.GetRow(11).CreateCell(1).SetCellValue(msg);
             }
 
             hssfworkbook.Write(excelDatas);
