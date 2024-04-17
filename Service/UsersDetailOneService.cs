@@ -2,6 +2,7 @@
 using Aspose.Words;
 using Aspose.Words.Saving;
 using Aspose.Words.Tables;
+using Aspose.Words.XAttr;
 using Dapper;
 using HelloWorld240318.Models;
 using Microsoft.CodeAnalysis;
@@ -11,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NPOI.HSSF.UserModel;
 using NPOI.HSSF.Util;
+using NPOI.POIFS.FileSystem;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
@@ -259,12 +261,6 @@ namespace HelloWorld240318.Service
             //建立Excel
             HSSFWorkbook hssfworkbook = new HSSFWorkbook(); //建立活頁簿
             ISheet sheet = hssfworkbook.CreateSheet("sheet"); //建立sheet
-            const int roMax = 30;
-
-            for (int i = 0; i < roMax; i++)
-            {
-                sheet.CreateRow(i);
-            }
 
             var excelDatas = new MemoryStream();
             if (!isTest)
@@ -309,28 +305,30 @@ namespace HelloWorld240318.Service
                     titleList.Add("Remark3"); titleList.Add("Remark4"); titleList.Add("Remark5"); titleList.Add("Remark6"); titleList.Add("Remark7");
                     titleList.Add("Remark8"); titleList.Add("Remark9");
 
-                    sheet.GetRow(1).CreateCell(0).SetCellValue(q.Name);
+                    sheet.CreateRow(1).CreateCell(0).SetCellValue(q.Name);
                     sheet.GetRow(1).CreateCell(1).SetCellValue(q.Sex == 0 ? Enum.SexList.女.ToString() : Enum.SexList.男.ToString());
                     sheet.GetRow(1).CreateCell(2).SetCellValue(q.IsMarry ? "已婚" : "未婚"); sheet.GetRow(1).CreateCell(3).SetCellValue(q.JobYears);
                     sheet.GetRow(1).CreateCell(4).SetCellValue(Common.Common.commutingList.ContainsKey(q.Commuting) ? Common.Common.commutingList[q.Commuting] : "");
                     sheet.GetRow(1).CreateCell(5).SetCellValue(q.IdentityNum);
                     sheet.GetRow(1).CreateCell(6).SetCellValue(q.Birthday.HasValue ? q.Birthday.Value.ToString("yyyy-MM-dd") : "");
                     sheet.GetRow(1).CreateCell(7).SetCellValue(q.Address);
-                    sheet.GetRow(3).CreateCell(0).SetCellValue(q.EmailAddress); sheet.GetRow(3).CreateCell(1).SetCellValue(q.TelPhone);
+                    sheet.CreateRow(3).CreateCell(0).SetCellValue(q.EmailAddress); sheet.GetRow(3).CreateCell(1).SetCellValue(q.TelPhone);
                     sheet.GetRow(3).CreateCell(2).SetCellValue(q.CellPhone); sheet.GetRow(3).CreateCell(3).SetCellValue(q.Account);
                     sheet.GetRow(3).CreateCell(4).SetCellValue(q.Password); sheet.GetRow(3).CreateCell(5).SetCellValue(q.Remark1);
                     sheet.GetRow(3).CreateCell(6).SetCellValue(q.Remark2); sheet.GetRow(3).CreateCell(7).SetCellValue(q.Remark3);
-                    sheet.GetRow(5).CreateCell(0).SetCellValue(q.Remark4); sheet.GetRow(5).CreateCell(1).SetCellValue(q.Remark5);
+                    sheet.CreateRow(5).CreateCell(0).SetCellValue(q.Remark4); sheet.GetRow(5).CreateCell(1).SetCellValue(q.Remark5);
                     sheet.GetRow(5).CreateCell(2).SetCellValue(q.Remark6); sheet.GetRow(5).CreateCell(3).SetCellValue(q.Remark7);
                     sheet.GetRow(5).CreateCell(4).SetCellValue(q.Remark8); sheet.GetRow(5).CreateCell(5).SetCellValue(q.Remark9);
 
                     int rowShift = 0, cellShift = 0;
+                    sheet.CreateRow(rowShift);
                     for (int i = 0; i < titleList.Count; i++)
                     {
                         if (i == 8 || i == 16)
                         {
                             rowShift = rowShift + 2;
                             cellShift = cellShift - 8;
+                            sheet.CreateRow(rowShift);
                         }
                         sheet.GetRow(0 + rowShift).CreateCell(i + cellShift).SetCellValue(titleList[i]);
                         sheet.GetRow(0 + rowShift).GetCell(i + cellShift).CellStyle = headerStyle;
@@ -448,10 +446,10 @@ namespace HelloWorld240318.Service
 
                 sheet.CreateFreezePane(0, 1, 0, 1);
 
-                sheet.GetRow(8).CreateCell(0).SetCellValue("A");
+                sheet.CreateRow(8).CreateCell(0).SetCellValue("A");
                 sheet.GetRow(8).CreateCell(1).SetCellValue("B");
                 sheet.GetRow(8).CreateCell(2).SetCellValue("A+B");
-                sheet.GetRow(9).CreateCell(0).SetCellValue(17);
+                sheet.CreateRow(9).CreateCell(0).SetCellValue(17);
                 sheet.GetRow(9).CreateCell(1).SetCellValue(7);
                 sheet.GetRow(9).CreateCell(2).CellFormula = "SUM(A10:B10)";
 
@@ -463,7 +461,7 @@ namespace HelloWorld240318.Service
                     }
                 }
 
-                sheet.GetRow(6).CreateCell(1).SetCellValue("google");
+                sheet.CreateRow(6).CreateCell(1).SetCellValue("google");
                 sheet.GetRow(6).GetCell(1).Hyperlink = new HSSFHyperlink(HyperlinkType.Url);
                 sheet.GetRow(6).GetCell(1).Hyperlink.Address = "https://www.google.com";
                 sheet.GetRow(6).GetCell(1).CellStyle = hyperlinkStyle;
@@ -479,23 +477,212 @@ namespace HelloWorld240318.Service
                 patriarch.CreatePicture(anchor, pictureIndex);
 
                 var msg = new HSSFRichTextString("文字顏色測試");
-
                 var redFont = hssfworkbook.CreateFont();
                 redFont.Color = IndexedColors.Red.Index;
                 msg.ApplyFont(0, 1, redFont);
-
                 var greenFont = hssfworkbook.CreateFont();
                 greenFont.Color = IndexedColors.Green.Index;
-                msg.ApplyFont(1, 3,greenFont);
-
+                msg.ApplyFont(1, 3, greenFont);
                 var blueFont = hssfworkbook.CreateFont();
                 blueFont.Color = IndexedColors.Blue.Index;
                 msg.ApplyFont(3, msg.Length, blueFont);
+                sheet.CreateRow(11).CreateCell(1).SetCellValue(msg);
 
-                sheet.GetRow(11).CreateCell(1).SetCellValue(msg);
+                string password = null;
+                sheet.ProtectSheet(password);
+
+                sheet.SetColumnHidden(0, false);
+                hssfworkbook.SetSheetHidden(0, false);
+
+                sheet.CreateRow(13).CreateCell(1).SetCellValue("分頁");
+                sheet.GetRow(13).CreateCell(2).SetCellValue("行數");
+                sheet.CreateRow(14).CreateCell(1).SetCellValue(hssfworkbook.GetSheetIndex("sheet") + 1);
+                sheet.GetRow(14).CreateCell(2).SetCellValue(sheet.LastRowNum + 1);
             }
 
             hssfworkbook.Write(excelDatas);
+            return excelDatas;
+        }
+        #endregion
+
+        #region
+        public MemoryStream TradeVanExcelReport(int itemNum = 0)
+        {
+            //建立Excel
+            XSSFWorkbook xssfworkbook = new XSSFWorkbook(); //建立活頁簿
+            var excelDatas = new MemoryStream();
+
+            //設定標題樣式
+            IFont font1 = xssfworkbook.CreateFont();
+            font1.FontName = "PMingLiU";
+            font1.FontHeightInPoints = 11;
+            font1.Boldweight = (short)FontBoldWeight.Normal;
+            font1.Color = HSSFColor.Black.Index;
+            ICellStyle style1 = xssfworkbook.CreateCellStyle();
+            style1.SetFont(font1);
+            style1.Alignment = HorizontalAlignment.Left; //水平置中
+            style1.VerticalAlignment = VerticalAlignment.Center; //垂直置中
+            style1.WrapText = true;
+
+            if (itemNum == 0 || itemNum == 1)
+            {
+                ISheet sheet1 = xssfworkbook.CreateSheet("銀行、信合社"); //建立sheet
+                sheet1.CreateRow(1); sheet1.AddMergedRegion(new CellRangeAddress(1, 1, 1, 21));
+                sheet1.GetRow(1).CreateCell(1).SetCellValue("智能風險監控系統");
+
+                sheet1.CreateRow(2); sheet1.AddMergedRegion(new CellRangeAddress(2, 2, 1, 21));
+                sheet1.GetRow(2).CreateCell(1).SetCellValue("經營風險偏高要保機構財務彙總表(銀行、信合社)");
+
+                sheet1.CreateRow(3); sheet1.AddMergedRegion(new CellRangeAddress(3, 3, 1, 21));
+                var msg = new XSSFRichTextString();
+                var redFont = new XSSFFont();
+                redFont.Color = HSSFColor.Red.Index;
+                msg.Append("單位：");
+                msg.Append("銀行(百萬元)、信合社(千元)", redFont);
+                msg.Append("；%");
+                sheet1.GetRow(3).CreateCell(1).SetCellValue(msg);
+
+                sheet1.CreateRow(4).CreateCell(1); sheet1.CreateRow(5).CreateCell(1); sheet1.CreateRow(6).CreateCell(1); sheet1.AddMergedRegion(new CellRangeAddress(4, 6, 1, 1));
+                sheet1.GetRow(4).GetCell(1).SetCellValue("要保機構名稱");
+                sheet1.GetRow(4).CreateCell(2); sheet1.GetRow(5).CreateCell(2); sheet1.GetRow(6).CreateCell(2); sheet1.AddMergedRegion(new CellRangeAddress(4, 6, 2, 2));
+                sheet1.GetRow(4).GetCell(2).SetCellValue("警示項目（註1）");
+                sheet1.GetRow(4).CreateCell(3); sheet1.GetRow(4).CreateCell(4); sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 3, 4));
+                sheet1.GetRow(4).GetCell(3).SetCellValue("112/09/30");
+
+                List<string> tempTitle = new List<string>()
+                {
+                    "資本適足率", "較上期底增減百分點", "存款總額", "放款總額", "放款/存款", "淨值"
+                };
+
+                for (int i = 3; i < 9; i++)
+                {
+                    sheet1.GetRow(5).CreateCell(i); sheet1.GetRow(6).CreateCell(i); sheet1.AddMergedRegion(new CellRangeAddress(5, 6, i, i));
+                    sheet1.GetRow(5).GetCell(i).SetCellValue(tempTitle[i - 3]);
+                }
+
+                for (int i = 5; i < 21; i++)
+                {
+                    sheet1.GetRow(4).CreateCell(i);
+                }
+
+                sheet1.AddMergedRegion(new CellRangeAddress(4, 4, 5, 20)); sheet1.GetRow(4).GetCell(5).SetCellValue("要保機構112/12/31申報資料");
+                sheet1.GetRow(5).CreateCell(9); sheet1.GetRow(5).CreateCell(10); sheet1.AddMergedRegion(new CellRangeAddress(5, 5, 9, 10));
+                sheet1.GetRow(5).GetCell(9).SetCellValue("損益");
+                sheet1.GetRow(5).CreateCell(11); sheet1.GetRow(5).CreateCell(15); sheet1.AddMergedRegion(new CellRangeAddress(5, 5, 11, 15));
+                sheet1.GetRow(5).GetCell(11).SetCellValue("逾期放款");
+
+                tempTitle.Clear();
+                tempTitle.Add("上年度"); tempTitle.Add("稅前"); tempTitle.Add("金額"); tempTitle.Add("比率");
+                tempTitle.Add("較上月底增減百分點"); tempTitle.Add("備抵放款損失"); tempTitle.Add("覆蓋率");
+
+                for (int i = 9; i < 16; i++)
+                {
+                    sheet1.GetRow(6).CreateCell(i); sheet1.GetRow(6).GetCell(i).SetCellValue(tempTitle[i - 9]);
+                }
+
+                tempTitle.Clear();
+                tempTitle.Add("應予評估資產覆蓋率"); tempTitle.Add("不良放款比率"); tempTitle.Add("不良放款覆蓋率"); tempTitle.Add("大陸曝險占淨值"); tempTitle.Add("流動性覆蓋率");
+
+                for (int i = 16; i < 21; i++)
+                {
+                    sheet1.GetRow(5).CreateCell(i); sheet1.GetRow(6).CreateCell(i); sheet1.AddMergedRegion(new CellRangeAddress(5, 6, i, i));
+                    sheet1.GetRow(5).GetCell(i).SetCellValue(tempTitle[i - 16]);
+                }
+
+                sheet1.GetRow(4).CreateCell(21); sheet1.GetRow(5).CreateCell(21); sheet1.GetRow(6).CreateCell(21); sheet1.AddMergedRegion(new CellRangeAddress(4, 6, 21, 21));
+                sheet1.GetRow(4).GetCell(21).SetCellValue("警示項目改善情形及其他重大事項");
+
+                int lastRow = sheet1.LastRowNum;
+
+                for (int row = lastRow + 1; row < lastRow + tempTitle.Count() + 1; row++)
+                {
+                    sheet1.CreateRow(row);
+                    for (int cell = 1; cell < 22; cell++)
+                    {
+                        if (cell == 1)
+                        {
+                            sheet1.GetRow(row).CreateCell(cell).SetCellValue(tempTitle[row - (lastRow + 1)]);
+                        }
+                        else
+                        {
+                            sheet1.GetRow(row).CreateCell(cell).SetCellValue(cell);
+                        }
+                    }
+                }
+
+                lastRow = sheet1.LastRowNum;
+                sheet1.CreateRow(lastRow + 1);
+
+                for (int i = 1; i < 22; i++)
+                {
+                    sheet1.GetRow(lastRow + 1).CreateCell(i);
+                }
+
+                sheet1.AddMergedRegion(new CellRangeAddress(lastRow + 1, lastRow + 1, 1, 22));
+                sheet1.GetRow(lastRow + 1).GetCell(1).SetCellValue("徐淑媛(測試) 及  製表日期：113/04/02 16:33:14");
+
+                for (int row = lastRow + 2; row < lastRow + 6; row++)
+                {
+                    sheet1.CreateRow(row);
+                    sheet1.GetRow(row).CreateCell(1).SetCellValue($"註{row - (lastRow + 1)}");
+                    for (int cell = 2; cell < 22; cell++)
+                    {
+                        sheet1.GetRow(row).CreateCell(cell);
+                    }
+                }
+
+                string tempMsg = "";
+                string enterString = "";
+                for (int i = 0; i < tempTitle.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        enterString = "\n";
+                    }
+
+                    tempMsg = tempMsg + enterString + tempTitle[i];
+                }
+
+                sheet1.AddMergedRegion(new CellRangeAddress(lastRow + 2, lastRow + 2, 2, 22));
+                sheet1.GetRow(lastRow + 2).GetCell(2).SetCellValue(tempMsg);
+                sheet1.GetRow(lastRow + 2).GetCell(2).CellStyle = style1;
+                sheet1.AddMergedRegion(new CellRangeAddress(lastRow + 3, lastRow + 3, 2, 22));
+                sheet1.GetRow(lastRow + 3).GetCell(2).SetCellValue("本表所稱「應予評估資產覆蓋率」= 評價準備/應予評估資產(II至V類)合計。"); ;
+                sheet1.AddMergedRegion(new CellRangeAddress(lastRow + 4, lastRow + 4, 2, 22));
+                sheet1.GetRow(lastRow + 4).GetCell(2).SetCellValue("本表所稱「不良放款覆蓋率」= 放款備抵呆帳/(逾期放款+其他有欠正常放款)。");
+                sheet1.AddMergedRegion(new CellRangeAddress(lastRow + 5, lastRow + 5, 2, 22));
+                sheet1.GetRow(lastRow + 5).GetCell(2).SetCellValue("本表所列機構係有前列第(1)至項警訊(13)項警訊(包含但不限於)者。");
+            }
+
+            if (itemNum == 0 || itemNum == 2)
+            {
+                ISheet sheet2 = xssfworkbook.CreateSheet("農漁會信用部"); //建立sheet
+
+
+
+
+
+
+
+
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+            xssfworkbook.Write(excelDatas);
             return excelDatas;
         }
         #endregion
