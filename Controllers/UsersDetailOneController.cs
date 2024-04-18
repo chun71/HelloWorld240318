@@ -1,7 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 using HelloWorld240318.Service;
-using NuGet.Packaging.Signing;
 
 namespace HelloWorld240318.Controllers
 {
@@ -75,29 +74,6 @@ namespace HelloWorld240318.Controllers
                 }
 
                 excelDatas = new UsersDetailOneService().ExcelCreate(q, isIdNull);
-                fileName = fileName + extension;
-                return File(excelDatas.ToArray(), applicationType, fileName);
-            }
-            catch (Exception ex)
-            {
-                return RedirectToAction("Index");
-            }
-        }
-
-        public IActionResult TradeVanReport(int itemNum = 0)
-        {
-            try
-            {
-                var excelDatas = new MemoryStream();
-                string fileName = "TradeVanReport";
-                //string extension = ".xls";
-                //string applicationType = "application/vnd.ms-excel";
-                string extension = ".xlsx";
-                string applicationType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                //string extension = ".ods";
-                //string applicationType = "application/vnd.oasis.opendocument.spreadsheet";
-
-                excelDatas = new UsersDetailOneService().TradeVanExcelReport(itemNum);
                 fileName = fileName + extension;
                 return File(excelDatas.ToArray(), applicationType, fileName);
             }
